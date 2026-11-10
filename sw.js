@@ -1,4 +1,4 @@
-const CACHE='another-day-v04-4';
+const CACHE='another-day-v04-5';
 const CORE=['./','./index.html','./enhancements.js','./enhancements.css','./native-apps.css','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
