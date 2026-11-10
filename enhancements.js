@@ -6,10 +6,29 @@
   let detail = null;
   const samples = {
     instagram:[{id:'ig-game',author:'Another Day · 故事动态',text:'今晚第一次和新朋友聊天。你会怎么开场？',media:'✦',day:1},{id:'ig-sky',author:'故事日记',text:'下班路上的天空，像一张没有写完的明信片。',media:'☁',day:1}],
-    threads:[{id:'th-game',author:'故事时间线',text:'最近有没有一首反复听也不会腻的歌？',day:1},{id:'th-music',author:'雨天电台',text:'今天路过唱片店，突然想翻翻很久没听的歌。',day:1},{id:'th-coffee',author:'小分队日常',text:'雨天适合在窗边喝点热的。你会选咖啡还是茶？',day:1}],
-    x:[{id:'x-game',author:'日常话题',text:'#TodayInOneLine 今天你会用哪一句话记录自己？',day:1},{id:'x-recap',author:'散步记录',text:'傍晚的风有点凉，刚好适合多走一站。',day:1},{id:'x-lobby',author:'音乐角落',text:'耳机里的一首歌，能把通勤路变短一点。',day:1},{id:'x-playlist',author:'城市漫步',text:'如果周末只有一个下午，你会去哪里走走？',day:1}],
-    weverse:[{id:'wv-info',author:'Another Day',text:'今天想记下的，是那些很小、却会留在心里的瞬间。',day:1}]
+    threads:[{id:'th-game',author:'ARMY 的晚间歌单',text:'又听了一遍《Still With You》。雨天和这首歌真的很搭。',day:1},{id:'th-music',author:'雨天电台',text:'今天路过唱片店，突然想翻翻很久没听的歌。',day:1},{id:'th-coffee',author:'路过的咖啡爱好者',text:'雨天适合在窗边喝点热的。你会选咖啡还是茶？',day:1}],
+    x:[{id:'x-game',author:'ARMY 随手记',text:'听完一首歌再出门，通勤好像没那么长了。',day:1},{id:'x-recap',author:'散步记录',text:'傍晚的风有点凉，刚好适合多走一站。',day:1},{id:'x-lobby',author:'音乐角落',text:'如果要给朋友推荐一首 BTS 的歌，你会先选哪首？',day:1},{id:'x-playlist',author:'城市漫步',text:'#TodayInOneLine 今天会用哪句话记录自己？',day:1}],
+    weverse:[]
   };
+  const publicSources={
+    instagram:[
+      {label:'BTS',detail:'官方 Instagram',url:'https://www.instagram.com/bts.bighitofficial/'},
+      {label:'Jung Kook',detail:'@mnijungkook',url:'https://www.instagram.com/mnijungkook/'},
+      {label:'RM',detail:'@rkive',url:'https://www.instagram.com/rkive/'},
+      {label:'Jin',detail:'@jin',url:'https://www.instagram.com/jin/'},
+      {label:'SUGA',detail:'@agustd',url:'https://www.instagram.com/agustd/'},
+      {label:'j-hope',detail:'@uarmyhope',url:'https://www.instagram.com/uarmyhope/'},
+      {label:'Jimin',detail:'@j.m',url:'https://www.instagram.com/j.m/'},
+      {label:'V',detail:'@thv',url:'https://www.instagram.com/thv/'}
+    ],
+    weverse:[
+      {label:'BTS Artist',detail:'查看 Weverse 最新公开动态',url:'https://weverse.io/bts/artist'},
+      {label:'Jung Kook',detail:'BTS 成员主页',url:'https://weverse.io/bts/profile/29fef56f82136b5e47bea6e5794be6e5'},
+      {label:'Jung Kook · 公开帖子',detail:'2026.03.21 · 原文与媒体见 Weverse',url:'https://weverse.io/bts/artist/4-224099089'}
+    ],
+    x:[{label:'BTS Official',detail:'公开动态 · X',url:'https://x.com/BTS_bighit'}]
+  };
+  const sourceCards=app=>`<section class="public-sources ${app}-sources"><div class="public-sources-head"><b>${app==='weverse'?'BTS · Artist Feed':app==='instagram'?'BTS · Instagram':'BTS · X'}</b><small>公开内容 · 前往原平台查看</small></div><div class="public-sources-list">${(publicSources[app]||[]).map(s=>`<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="在原平台查看 ${esc(s.label)}"><span class="source-avatar">${esc(s.label[0])}</span><span><b>${esc(s.label)}</b><small>${esc(s.detail)}</small></span><span class="source-arrow">↗</span></a>`).join('')}</div></section>`;
   const initialStory = () => ({seen:[],pending:null,flags:{},relations:{jk:0},notifications:[]});
   function hydrate(raw) {
     const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
@@ -69,12 +88,13 @@
     else if(t==='activity') body='<div class="empty-state"><b>通知</b><p>有新消息时，会在这里提醒你。</p></div>';
     else if(t==='reels') body='<div class="empty-state"><b>Reels</b><p>暂未加入有使用许可的短视频。</p></div>';
     else body=postList(app).map(p=>postCard(app,p)).join('');
-    if(app==='instagram'&&t==='feed'&&!detail) body=`<div class="story-strip"><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar">＋</span><small>你的快拍</small></button><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar filled">✦</span><small>故事线索</small></button></div>${body}`;
+    if(app==='instagram'&&t==='feed'&&!detail) body=`<div class="story-strip"><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar">＋</span><small>你的快拍</small></button><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar filled">✦</span><small>故事线索</small></button></div>${sourceCards('instagram')}<div class="feed-section-label">Another Day · 故事与日常</div>${body}`;
     if(app==='threads'&&t==='feed'&&!detail) body=`<button class="thread-prompt" onclick="composePost('threads')"><span class="avatar">${esc(state.profile.nick?.[0]||'我')}</span><span>有什么新鲜事？</span>${svg('plus',19)}</button>${body}`;
     if(app==='weverse' && t==='live') body='<div class="wv-section-title">LIVE</div><div class="empty-state"><div class="wv-play">▶</div><b>暂无直播</b><p>仅展示取得许可的公开直播。</p></div>';
     if(app==='weverse' && t==='media') body='<div class="wv-section-title">Media</div><div class="empty-state"><b>媒体资料</b><p>尚无已获许可的音视频。</p></div>';
-    if(app==='weverse' && t==='community') body=`<div class="wv-section-title">Community</div>${postList(app).map(p=>postCard(app,p)).join('')}`;
-    if(app==='weverse' && t==='feed') body=`<div class="wv-banner"><span class="wv-mark">W</span><div><small>COMMUNITY</small><h3>Another Day</h3><p>我们的故事空间</p></div></div><div class="wv-section-title">Artist Feed <span>Another Day</span></div><div class="weverse-feature"><div class="wv-feature-art">✦</div><div><b>今天的小事</b><p>一首歌、一场雨，还有想记住的片刻。</p><button onclick="openApp('kakao')">去看看消息 ›</button></div></div>${postList(app).map(p=>postCard(app,p)).join('')}`;
+    if(app==='weverse' && t==='community') body=`<div class="wv-section-title">Another Day · Community</div>${postList(app).map(p=>postCard(app,p)).join('')||'<p class="empty">今天还没有社区动态。</p>'}`;
+    if(app==='weverse' && t==='feed') body=`<div class="wv-banner"><span class="wv-mark">W</span><div><small>BTS COMMUNITY</small><h3>Weverse</h3><p>田柾国 · BTS</p></div></div>${sourceCards('weverse')}<div class="wv-section-title">Another Day · Community <span>故事与玩家动态</span></div>${postList(app).map(p=>postCard(app,p)).join('')||'<p class="empty">社区动态会随着故事出现。</p>'}`;
+    if(app==='x'&&t==='feed'&&!detail)body=`${sourceCards('x')}<div class="feed-section-label">讨论与日常</div>${body}`;
     let top='',bottom='';
     const item=(id,label,icon,fn)=>`<button class="${t===id?'active':''}" onclick="${fn||`setSocialTab('${app}','${id}')`}" aria-label="${label}">${svg(icon,24)}<small>${label}</small></button>`;
     if(app==='instagram'){

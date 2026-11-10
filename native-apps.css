@@ -64,3 +64,13 @@
 .home-story-link{display:block;max-width:260px;margin-top:12px;padding:10px 14px;border:1px solid #ffffff70;border-radius:13px;background:#ffffff28;color:inherit;text-align:left;font-size:13px;backdrop-filter:blur(10px)}
 .home-story-done{margin-top:12px;font-size:12px;opacity:.75}
 .story-notice{display:block;width:100%;text-align:left}
+.public-sources{margin:10px 14px 18px;border:1px solid #ececf0;border-radius:17px;background:#fff;overflow:hidden}
+.public-sources-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:14px 15px 10px}
+.public-sources-head b{font-size:14px}.public-sources-head small{font-size:10px;color:#888;text-align:right}
+.public-sources-list{display:flex;gap:8px;padding:0 12px 13px;overflow-x:auto;scrollbar-width:none}
+.public-sources-list::-webkit-scrollbar{display:none}
+.public-sources-list a{display:flex;align-items:center;gap:8px;flex:none;min-width:150px;max-width:190px;padding:9px 10px;border:1px solid #eee;border-radius:12px;color:#242424;text-decoration:none;background:#fafafa}
+.public-sources-list a>span:nth-child(2){min-width:0;flex:1}.public-sources-list a b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.public-sources-list a small{display:block;color:#777;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.source-avatar{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;background:#ddd2ea;font-size:13px;font-weight:700}.source-arrow{color:#777;font-size:15px}
+.weverse-sources .source-avatar{background:#d0eee8}.x-sources .source-avatar{background:#e7e7e7}
+.feed-section-label{padding:5px 16px 12px;color:#777;font-size:11px;font-weight:600;letter-spacing:.02em}
