@@ -4,6 +4,8 @@
   const archiveKey = 'another_day_v04_extra';
   const tabs = {instagram:'feed',threads:'feed',x:'feed',weverse:'feed',kakao:'chats'};
   let detail = null;
+  let artistView = false, artistTab = 'posts', instagramArtist = null;
+  const excerptSelection = {};
   const samples = {
     instagram:[{id:'ig-game',author:'Another Day · 故事动态',text:'今晚第一次和新朋友聊天。你会怎么开场？',media:'✦',day:1},{id:'ig-sky',author:'故事日记',text:'下班路上的天空，像一张没有写完的明信片。',media:'☁',day:1}],
     threads:[{id:'th-game',author:'ARMY 的晚间歌单',text:'又听了一遍《Still With You》。雨天和这首歌真的很搭。',day:1},{id:'th-music',author:'雨天电台',text:'今天路过唱片店，突然想翻翻很久没听的歌。',day:1},{id:'th-coffee',author:'路过的咖啡爱好者',text:'雨天适合在窗边喝点热的。你会选咖啡还是茶？',day:1}],
@@ -28,7 +30,26 @@
     ],
     x:[{label:'BTS Official',detail:'公开动态 · X',url:'https://x.com/BTS_bighit'}]
   };
-  const sourceCards=app=>`<section class="public-sources ${app}-sources"><div class="public-sources-head"><b>${app==='weverse'?'BTS · Artist Feed':app==='instagram'?'BTS · Instagram':'BTS · X'}</b><small>公开内容 · 前往原平台查看</small></div><div class="public-sources-list">${(publicSources[app]||[]).map(s=>`<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="在原平台查看 ${esc(s.label)}"><span class="source-avatar">${esc(s.label[0])}</span><span><b>${esc(s.label)}</b><small>${esc(s.detail)}</small></span><span class="source-arrow">↗</span></a>`).join('')}</div></section>`;
+  const sourceCards=app=>`<section class="public-sources ${app}-sources"><div class="public-sources-head"><b>${app==='weverse'?'BTS · Weverse':app==='instagram'?'BTS · Instagram':'BTS · X'}</b><small>账号入口</small></div><div class="public-sources-list">${(publicSources[app]||[]).map((s,i)=>{const inner=`<span class="source-avatar">${esc(s.label[0])}</span><span><b>${esc(s.label)}</b><small>${esc(s.detail)}</small></span><span class="source-arrow">↗</span>`;return app==='weverse'&&s.label==='Jung Kook'?`<button onclick="openWeverseArtist()" aria-label="查看 Jung Kook 艺人主页">${inner}</button>`:app==='instagram'?`<button onclick="openInstagramArtist(${i})" aria-label="查看 ${esc(s.label)} 资料页">${inner}</button>`:`<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="在原平台查看 ${esc(s.label)}">${inner}</a>`}).join('')}</div></section>`;
+  const publicExcerpts={
+    instagram:[
+      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.03.24',summary:'一组热身时的日常画面。',url:'https://www.instagram.com/p/DWS7me_mCzX/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.20',summary:'分享了一组自己拍下的街头照片。',url:'https://www.instagram.com/p/Devd9WylZJO/'},
+      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.10.21',summary:'官方账号记录了世界巡演圣地亚哥站。',url:'https://www.instagram.com/p/DewCUU_GAiQ/'},
+      {author:'V',handle:'@thv',date:'2026.10.20',summary:'分享了照片与一段随手写下的话。',url:'https://www.instagram.com/p/Det7oS5lTlB/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.14',summary:'发了一条写着「LOVE BALTIMORE」的动态。',url:'https://www.instagram.com/p/DeeBDzLFY26/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.11.04',summary:'留下一枚笑脸，和新拍下的画面。',url:'https://www.instagram.com/p/DfUY2FnFGEc/'}
+    ],
+    weverse:[
+      {author:'Jung Kook',handle:'BTS · Artist',date:'2026.03.21',summary:'谈到即将到来的舞台，感谢前来见面的 ARMY，也提醒大家平安地享受演出。',url:'https://weverse.io/bts/artist/4-224099089'},
+      {author:'Jung Kook',handle:'BTS · Artist',date:'2026.02.26',summary:'说专辑发行已近，期待回归后与大家见面。',url:'https://weverse.io/bts/artist/2-170409176'},
+      {author:'Jimin',handle:'BTS · Artist',date:'2026.03.22',summary:'新专辑与舞台终于呈现在大家面前。他感谢 ARMY，也说后面还有值得期待的内容。',url:'https://weverse.io/bts/artist/3-224186955'},
+      {author:'Jin',handle:'BTS · Artist',date:'2026.07.04',summary:'分享了独自拍照时被打扰的小插曲。',url:'https://weverse.io/bts/artist/3-234850298'},
+      {author:'Jimin',handle:'BTS · Artist',date:'2026.05.26',summary:'看到 ARMY 获奖的消息，发帖向大家祝贺。',url:'https://weverse.io/bts/artist/4-231081134'}
+    ]
+  };
+  function drawExcerpts(app){const pool=[...(publicExcerpts[app]||[])],count=app==='weverse'?3:2,old=excerptSelection[app]||[];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}let next=pool.slice(0,count);if(old.length&&next.map(x=>x.url).sort().join('|')===old.map(x=>x.url).sort().join('|')){const other=pool.filter(x=>!old.some(y=>y.url===x.url));if(other.length)next[count-1]=other[Math.floor(Math.random()*other.length)]}excerptSelection[app]=next}
+  const excerptCards=(app,items=excerptSelection[app]||publicExcerpts[app]||[])=>`<section class="public-excerpts"><div class="public-excerpts-title"><b>${app==='weverse'?'Artist Feed':'公开动态'}</b><small>公开帖子摘要 · ${app==='weverse'?'Weverse':'Instagram'}</small></div>${items.map(p=>`<article class="public-excerpt"><div class="public-excerpt-head"><span class="source-avatar">${esc(p.author[0])}</span><span><b>${esc(p.author)}</b><small>${esc(p.handle)} · ${esc(p.date)}</small></span></div><p>${esc(p.summary)}</p><a href="${p.url}" target="_blank" rel="noopener noreferrer">查看来源 ↗</a></article>`).join('')}</section>`;
   const initialStory = () => ({seen:[],pending:null,flags:{},relations:{jk:0},notifications:[]});
   function hydrate(raw) {
     const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
@@ -36,9 +57,9 @@
     const normalizeMessage=m=>({from:m.from || m.who || 'jk',text:String(m.text || ''),day:Number(m.day)||1,...(typeof m.image==='string'&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(m.image)&&m.image.length<1_200_000?{image:m.image}:{})});
     const messages = Array.isArray(obj.messages) ? obj.messages.map(normalizeMessage) : structuredClone(seed.messages);
     const group = Array.isArray(obj.group) ? obj.group.map(normalizeMessage) : structuredClone(seed.group);
-    const social={posts:[],likes:[],comments:{},bookmarks:[],reposts:[],...(obj.social||{})};
+    const social={posts:[],likes:[],comments:{},bookmarks:[],reposts:[],following:[],...(obj.social||{})};
     social.posts=(Array.isArray(social.posts)?social.posts:[]).filter(p=>p&&typeof p==='object').map(p=>({...p,id:String(p.id||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80)||`import-${Math.random().toString(36).slice(2)}`}));
-    for(const key of ['likes','bookmarks','reposts'])social[key]=Array.isArray(social[key])?social[key]:[];
+    for(const key of ['likes','bookmarks','reposts','following'])social[key]=Array.isArray(social[key])?social[key]:[];
     social.comments=Object.fromEntries(Object.entries(social.comments&&typeof social.comments==='object'?social.comments:{}).map(([id,entries])=>[id,(Array.isArray(entries)?entries:[]).map(c=>typeof c==='string'?{author:'玩家',text:c}:c).filter(c=>c&&typeof c==='object')]));
     return {...structuredClone(seed),...obj,schemaVersion:2,profile,day:Math.max(1,Math.floor(Number(obj.day)||1)),messages,group,
       choices:Array.isArray(obj.choices)?obj.choices:obj.choice?[obj.choice]:[],
@@ -76,7 +97,20 @@
     const repost=action(`${svg('repeat',20)}<span>${reposted?'已转发':'转发'}</span>`,`toggleSocial('reposts','${p.id}')`,reposted);
     return `<article class="social-post ${app}-post"><div class="post-rail">${avatar}<span></span></div><div class="post-main"><div class="post-author"><b>${esc(p.author)}</b><small>· 第 ${p.day||state.day} 天</small><button class="post-more" onclick="openPost('${app}','${p.id}')" aria-label="查看帖子">${svg('more')}</button></div><p>${esc(p.text)}</p>${media}<div class="post-actions">${comment}${app==='weverse'?'':repost}${like}${app==='weverse'?'':action(svg('share',20),`sharePost('${app}','${p.id}')`)}</div></div></article>`;
   }
+  function artistProfilePage(){
+    const followed=state.social.following.includes('weverse-jk');
+    const posts=publicExcerpts.weverse.filter(p=>p.author==='Jung Kook');
+    const body=artistTab==='posts'?excerptCards('weverse',posts):`<div class="artist-empty">${artistTab==='comments'?'暂未收录可展示的公开评论。':'暂未收录可展示的 Party 内容。'}</div>`;
+    $('#screen').innerHTML=`<div class="artist-profile"><div class="artist-hero"><button class="artist-back" onclick="closeWeverseArtist()" aria-label="返回 Weverse">${svg('back')}</button><span class="artist-avatar">JK</span><small>1997.09.01</small><h2>JK <span>✓</span></h2><button class="artist-follow" onclick="toggleArtistFollow()">${followed?'关注中':'关注'}</button></div><nav class="artist-tabs"><button class="${artistTab==='posts'?'active':''}" onclick="setArtistTab('posts')">帖子</button><button class="${artistTab==='comments'?'active':''}" onclick="setArtistTab('comments')">评论</button><button class="${artistTab==='party'?'active':''}" onclick="setArtistTab('party')">Party</button></nav><div class="artist-profile-body">${body}</div></div>`;
+  }
+  function instagramProfilePage(){
+    const person=publicSources.instagram[instagramArtist],posts=publicExcerpts.instagram.filter(p=>p.author===person.label),followId=`instagram-${instagramArtist}`;
+    const followed=state.social.following.includes(followId);
+    $('#screen').innerHTML=`<div class="ig-profile-top"><button onclick="closeInstagramArtist()" aria-label="返回 Instagram">${svg('back')}</button><strong>${esc(person.detail.startsWith('@')?person.detail.slice(1):'bts.bighitofficial')}</strong><span>${svg('more')}</span></div><div class="ig-artist-profile"><div class="ig-artist-summary"><span class="ig-artist-avatar">${esc(person.label[0])}</span><div><strong>${posts.length}</strong><small>已收录帖子</small></div></div><h3>${esc(person.label)}</h3><p>${person.label==='BTS'?'BTS · 官方账号':`${esc(person.label)} · BTS`}</p><div class="ig-artist-actions"><button onclick="toggleInstagramFollow()">${followed?'关注中':'关注'}</button><a href="${person.url}" target="_blank" rel="noopener noreferrer">原账号 ↗</a></div><div class="ig-artist-divider">帖子</div>${posts.length?excerptCards('instagram',posts):'<p class="ig-artist-empty">这里还没有收录经核对的公开帖子。</p>'}</div>`;
+  }
   function socialPage(app) {
+    if(app==='weverse'&&artistView)return artistProfilePage();
+    if(app==='instagram'&&instagramArtist!==null)return instagramProfilePage();
     const t=tabs[app];let body='';
     if(detail?.app===app) {
       const p=postList(app).find(x=>x.id===detail.id);
@@ -88,12 +122,12 @@
     else if(t==='activity') body='<div class="empty-state"><b>通知</b><p>有新消息时，会在这里提醒你。</p></div>';
     else if(t==='reels') body='<div class="empty-state"><b>Reels</b><p>暂未加入有使用许可的短视频。</p></div>';
     else body=postList(app).map(p=>postCard(app,p)).join('');
-    if(app==='instagram'&&t==='feed'&&!detail) body=`<div class="story-strip"><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar">＋</span><small>你的快拍</small></button><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar filled">✦</span><small>故事线索</small></button></div>${sourceCards('instagram')}<div class="feed-section-label">Another Day · 故事与日常</div>${body}`;
+    if(app==='instagram'&&t==='feed'&&!detail) body=`<div class="story-strip"><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar">＋</span><small>你的快拍</small></button><button onclick="setSocialTab('instagram','stories')"><span class="story-avatar filled">✦</span><small>故事线索</small></button></div>${excerptCards('instagram')}${sourceCards('instagram')}<div class="feed-section-label">Another Day · 故事与日常</div>${body}`;
     if(app==='threads'&&t==='feed'&&!detail) body=`<button class="thread-prompt" onclick="composePost('threads')"><span class="avatar">${esc(state.profile.nick?.[0]||'我')}</span><span>有什么新鲜事？</span>${svg('plus',19)}</button>${body}`;
     if(app==='weverse' && t==='live') body='<div class="wv-section-title">LIVE</div><div class="empty-state"><div class="wv-play">▶</div><b>暂无直播</b><p>仅展示取得许可的公开直播。</p></div>';
     if(app==='weverse' && t==='media') body='<div class="wv-section-title">Media</div><div class="empty-state"><b>媒体资料</b><p>尚无已获许可的音视频。</p></div>';
     if(app==='weverse' && t==='community') body=`<div class="wv-section-title">Another Day · Community</div>${postList(app).map(p=>postCard(app,p)).join('')||'<p class="empty">今天还没有社区动态。</p>'}`;
-    if(app==='weverse' && t==='feed') body=`<div class="wv-banner"><span class="wv-mark">W</span><div><small>BTS COMMUNITY</small><h3>Weverse</h3><p>田柾国 · BTS</p></div></div>${sourceCards('weverse')}<div class="wv-section-title">Another Day · Community <span>故事与玩家动态</span></div>${postList(app).map(p=>postCard(app,p)).join('')||'<p class="empty">社区动态会随着故事出现。</p>'}`;
+    if(app==='weverse' && t==='feed') body=`<div class="wv-banner"><span class="wv-mark">W</span><div><small>BTS COMMUNITY</small><h3>Weverse</h3><p>田柾国 · BTS</p></div></div>${excerptCards('weverse')}${sourceCards('weverse')}<div class="wv-section-title">Another Day · Community <span>故事与玩家动态</span></div>${postList(app).map(p=>postCard(app,p)).join('')||'<p class="empty">社区动态会随着故事出现。</p>'}`;
     if(app==='x'&&t==='feed'&&!detail)body=`${sourceCards('x')}<div class="feed-section-label">讨论与日常</div>${body}`;
     let top='',bottom='';
     const item=(id,label,icon,fn)=>`<button class="${t===id?'active':''}" onclick="${fn||`setSocialTab('${app}','${id}')`}" aria-label="${label}">${svg(icon,24)}<small>${label}</small></button>`;
@@ -154,6 +188,13 @@
     if(page==='settings') $('#screen').insertAdjacentHTML('beforeend',card(`<h3>导入存档</h3><p class="mini">支持当前版本及 V0.4 JSON。导入会替换当前本机进度，请先导出备份。</p><input type="file" accept="application/json,.json" onchange="importSave(event)">`));
   };
   window.setSocialTab=(app,t)=>{tabs[app]=t;detail=null;page=app;render()};
+  window.openInstagramArtist=i=>{if(!publicSources.instagram[i])return;instagramArtist=i;page='instagram';render()};
+  window.closeInstagramArtist=()=>{instagramArtist=null;render()};
+  window.toggleInstagramFollow=()=>{const id=`instagram-${instagramArtist}`,list=state.social.following;state.social.following=list.includes(id)?list.filter(x=>x!==id):[...list,id];save();render()};
+  window.openWeverseArtist=()=>{artistView=true;artistTab='posts';page='weverse';render()};
+  window.closeWeverseArtist=()=>{artistView=false;render()};
+  window.setArtistTab=t=>{artistTab=t;render()};
+  window.toggleArtistFollow=()=>{const list=state.social.following;state.social.following=list.includes('weverse-jk')?list.filter(id=>id!=='weverse-jk'):[...list,'weverse-jk'];save();render()};
   window.setKakaoTab=t=>{tabs.kakao=t;render()};
   window.openPost=(app,id)=>{detail={app,id};page=app;render()};
   window.closePost=()=>{detail=null;render()};
@@ -205,9 +246,9 @@
   const legacyNotifications=showNotifications;
   showNotifications=function(){legacyNotifications();const box=$('#screen .lock');if(box){const items=state.story.notifications.slice(0,5);box.insertAdjacentHTML('beforeend',items.map(n=>`<button class="notice story-notice" onclick="openStoryChannel('${['instagram','threads','x','weverse','group'].includes(n.channel)?n.channel:'jk'}')"><b>${esc(n.app==='kakao'?'KakaoTalk':n.app)} · 新动态</b><p>${esc(n.text)}</p></button>`).join(''))}};
   const legacyHome=goHome;
-  goHome=function(){detail=null;legacyHome()};
+  goHome=function(){detail=null;artistView=false;instagramArtist=null;legacyHome()};
   const legacyOpen= openApp;
-  openApp=function(p){detail=null;legacyOpen(p)};
+  openApp=function(p){detail=null;if(p!=='weverse')artistView=false;if(p!=='instagram')instagramArtist=null;if(['instagram','weverse'].includes(p)&&page!==p)drawExcerpts(p);legacyOpen(p)};
   openChat=function(name){legacyChat(name)};
   window.importSave=async event=>{const file=event.target.files?.[0];if(!file)return;try{if(file.size>5_000_000)throw Error('存档过大');const raw=JSON.parse(await file.text());if(!raw||typeof raw!=='object'||Array.isArray(raw)||!Array.isArray(raw.messages)||!(raw.profile||raw.name))throw Error('格式错误');if(!confirm('导入存档会替换当前本机进度。确定继续吗？'))return;state=hydrate(raw);save();goHome()}catch{alert('导入失败：请选择有效的 Another Day JSON 存档')}};
   resetSave=function(){if(!confirm('确定删除本机全部剧情存档吗？'))return;localStorage.removeItem(KEY);localStorage.removeItem(archiveKey);state=hydrate(structuredClone(seed));page='onboard';render()};
