@@ -5,7 +5,7 @@
 ## 当前功能（V0.4 基础版）
 
 - 锁屏、桌面、Dock、通知中心和移动端安全区域适配；支持添加到主屏幕，HTTPS 下提供基础离线缓存。
-- KakaoTalk 私聊、群聊、好友与聊天页；首日选择及第 2、3、5 天的可选事件。选择会保存到关系状态、事件记录与消息历史。
+- KakaoTalk 私聊、群聊、好友与聊天页；首日到第 10 天的可选事件。选择会保存到关系状态、事件记录与消息历史，并解锁关联社交动态。聊天支持发送小尺寸本机照片。
 - Instagram、Threads、X 的虚构信息流、玩家发布、点赞与评论；Instagram 收藏，X 转发与搜索。Weverse 有独立的 Artist、Community、LIVE、Media 页，并明确标识暂无授权媒体。
 - 本机 JSON 存档导出与导入；读取旧 `another_day_v1` 和附件 V0.4 `another_day_v04_extra` 数据。导入前建议先导出备份。
 - 备忘录、故事日历、本地照片预览。AI 仅保留未配置接口，不会发送聊天内容到服务端。
@@ -19,6 +19,8 @@ npm install --no-save --no-package-lock playwright
 npx playwright install chromium
 node tests/smoke.cjs
 ```
+
+检查 iPhone Safari 对应的 WebKit 布局时，可运行 `npx playwright install webkit`，再运行 `$env:SMOKE_ENGINE='webkit'; node tests/smoke.cjs`。
 
 ## 当前限制
 

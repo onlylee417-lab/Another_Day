@@ -25,3 +25,29 @@
 .wv-top{box-shadow:0 2px 8px #0000000a}.weverse{background:#f7f7fb}.wv-banner{margin:14px;border-radius:18px;padding:19px;min-height:118px;background:linear-gradient(125deg,#6244aa,#9b79d7);color:#fff;display:flex;gap:15px;align-items:center}.wv-banner h3{font-size:20px;margin:4px 0}.wv-banner p{font-size:11px;margin:0;color:#e6dcfa}.wv-banner small{font-size:9px;letter-spacing:.14em}.wv-mark{width:52px;height:52px;border-radius:15px;background:#ffffff33;display:grid;place-items:center;font-size:28px;font-weight:800}.wv-section-title{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;font-size:17px;font-weight:700}.wv-section-title span{font-size:10px;color:#8b79a8;font-weight:500}.weverse-feature{display:flex;gap:13px;margin:0 14px 15px;padding:14px;border-radius:15px;background:#fff;box-shadow:0 2px 8px #00000008}.wv-feature-art{width:84px;height:84px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#af9ed3,#e5bad8);font-size:29px;color:#fff;flex-shrink:0}.weverse-feature b{font-size:13px}.weverse-feature p{font-size:11px;color:#888;line-height:1.5;margin:5px 0}.weverse-feature button{border:0;background:none;color:#7453c9;font-size:11px;padding:0}.weverse-post{margin:0 14px 12px;border:0;border-radius:16px}.weverse-post .post-rail>span:last-child{display:none}.wv-play{width:150px;height:100px;margin:0 auto 15px;border-radius:15px;background:#ded6ed;color:#6d55a4;display:grid;place-items:center;font-size:27px}
 @media(max-width:440px){.screen:has(.social),.screen:has(.kakao-body){padding-top:env(safe-area-inset-top,0px)}}
 .ig-story-viewer{min-height:calc(100dvh - 135px);background:linear-gradient(145deg,#594c80,#a37eab 52%,#d6acbd);color:#fff;position:relative;display:flex;flex-direction:column;padding:10px 13px 25px}.story-progress{display:flex;gap:4px}.story-progress span{height:2px;flex:1;background:#ffffff70;border-radius:2px}.story-progress span:first-child{background:white}.story-viewer-head{display:flex;align-items:center;gap:9px;margin-top:10px}.story-viewer-head .story-avatar{width:33px;height:33px;border:2px solid #fff;background:#ffffff26;color:#fff;font-size:15px}.story-viewer-head b{font-size:12px;flex:1}.story-viewer-head small{font-size:10px;font-weight:400;color:#fffd}.story-viewer-head button{background:none;border:0;color:#fff;font-size:28px}.story-scene{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:15px}.story-scene span{font-size:56px}.story-scene p{font-size:24px;line-height:1.5;font-weight:700}.story-viewer-foot button{width:100%;border:1px solid #ffffffaa;border-radius:25px;color:white;background:#ffffff20;padding:12px;font-size:13px}
+
+/* Reserve a real bottom area; feeds and conversations never scroll under controls. */
+.screen:has(.social),.screen:has(.kakao-body){display:flex;flex-direction:column;height:100%;overflow:hidden;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.screen:has(.social)>.product-top,.screen:has(.social)>.feed-switch,.screen:has(.kakao-body)>.kakao-top{flex:none}
+.screen:has(.social)>.social,.screen:has(.kakao-body)>.kakao-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.screen:has(.social)>.social::-webkit-scrollbar,.screen:has(.kakao-body)>.kakao-body::-webkit-scrollbar{display:none}
+.screen:has(.social)>.app-tabs,.screen:has(.kakao-body)>.app-tabs{position:relative;bottom:auto;left:auto;right:auto;flex:none;height:56px;min-height:56px;z-index:8}
+.screen:has(.social)>.x-compose{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.screen:has(.chat){display:flex;flex-direction:column;height:100%;overflow:hidden;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.screen:has(.chat)>.header,.screen:has(.chat)>.note:first-of-type{flex:none}
+.screen:has(.chat)>.chat{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:14px}
+.screen:has(.chat)>.composer{position:relative;bottom:auto;flex:none;padding:9px 11px;align-items:center;gap:8px;border-top:1px solid #d7dce2;background:#fff}
+.screen:has(.chat)>.composer .field{margin:0;border-radius:20px;min-height:40px;padding:9px 12px}
+.screen:has(.chat)>.composer .button{background:#f8d94e;color:#27251f;border-radius:12px;min-height:38px;padding:8px 13px;font-size:13px}
+.screen:has(.chat)>.note:last-child{display:none}
+.screen:has(.chat) .chat-attach{width:36px;height:36px;border:1px solid #afb8c1;border-radius:50%;background:#fff;color:#687685;display:grid;place-items:center;flex:none;font-size:24px;line-height:1}
+.screen:has(.chat) .chat-attachment-input{display:none}
+.screen:has(.chat) .chat-photo{max-width:180px;max-height:220px;display:block;border-radius:9px;margin-top:6px;object-fit:cover}
+.screen:has(.chat)>.event-choices{flex:none;max-height:135px;overflow:auto;background:#b6c8d8}
+@media(display-mode:standalone){.screen:has(.social),.screen:has(.kakao-body),.screen:has(.chat){padding-top:calc(env(safe-area-inset-top,0px) + 38px);padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}}
+@media(max-width:440px){
+  .bar{display:none}
+  .screen:has(.social),.screen:has(.kakao-body){padding-bottom:env(safe-area-inset-bottom,0px)}
+  .screen:has(.chat){padding-bottom:0}
+  .screen:has(.chat)>.composer{padding-bottom:calc(9px + env(safe-area-inset-bottom,0px))}
+}

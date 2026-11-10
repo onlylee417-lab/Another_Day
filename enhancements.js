@@ -14,8 +14,9 @@
   function hydrate(raw) {
     const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const profile = obj.profile && typeof obj.profile === 'object' ? obj.profile : obj.name ? {nick:String(obj.name).slice(0,30),birthday:'',handle:''} : null;
-    const messages = Array.isArray(obj.messages) ? obj.messages.map(m=>({from:m.from || m.who || 'jk',text:String(m.text || ''),day:Number(m.day)||1})) : structuredClone(seed.messages);
-    const group = Array.isArray(obj.group) ? obj.group.map(m=>({from:m.from || m.who || 'JK',text:String(m.text || ''),day:Number(m.day)||1})) : structuredClone(seed.group);
+    const normalizeMessage=m=>({from:m.from || m.who || 'jk',text:String(m.text || ''),day:Number(m.day)||1,...(typeof m.image==='string'&&/^data:image\/(?:png|jpeg|webp|gif);base64,/.test(m.image)&&m.image.length<1_200_000?{image:m.image}:{})});
+    const messages = Array.isArray(obj.messages) ? obj.messages.map(normalizeMessage) : structuredClone(seed.messages);
+    const group = Array.isArray(obj.group) ? obj.group.map(normalizeMessage) : structuredClone(seed.group);
     const social={posts:[],likes:[],comments:{},bookmarks:[],reposts:[],...(obj.social||{})};
     social.posts=(Array.isArray(social.posts)?social.posts:[]).filter(p=>p&&typeof p==='object').map(p=>({...p,id:String(p.id||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80)||`import-${Math.random().toString(36).slice(2)}`}));
     for(const key of ['likes','bookmarks','reposts'])social[key]=Array.isArray(social[key])?social[key]:[];
@@ -61,7 +62,7 @@
     if(detail?.app===app) {
       const p=postList(app).find(x=>x.id===detail.id);
       body=p?`<button class="text-back" onclick="closePost()">‹ 返回</button>${postCard(app,p)}<section class="comment-list"><h3>评论</h3>${(state.social.comments[p.id]||[]).map(c=>`<p><b>${esc(c.author)}：</b>${esc(c.text)}</p>`).join('')||'<p class="muted">暂无评论</p>'}<div class="inline-compose"><input id="commentInput" class="field" maxlength="250" placeholder="写下虚构评论"><button class="button" onclick="addComment('${app}','${p.id}')">发送</button></div></section>`:'';
-    } else if(t==='profile') body=`<div class="profile-summary"><div class="avatar">${esc(state.profile?.nick?.[0]||'我')}</div><div><h3>${esc(state.profile?.nick||'我')}</h3><p>虚构账号 · ${state.social.posts.filter(p=>p.app===app).length} 条发布</p></div></div><div class="profile-divider">帖子</div>${state.social.posts.filter(p=>p.app===app).map(p=>postCard(app,p)).join('')||'<p class="empty">你还没有发布内容</p>'}`;
+    } else if(t==='profile') body=`<div class="profile-summary"><div class="avatar">${esc(state.profile?.nick?.[0]||'我')}</div><div><h3>${esc(state.profile?.nick||'我')}</h3><p>虚构账号 · ${state.social.posts.filter(p=>p.app===app&&!p.source).length} 条发布</p></div></div><div class="profile-divider">帖子</div>${state.social.posts.filter(p=>p.app===app&&!p.source).map(p=>postCard(app,p)).join('')||'<p class="empty">你还没有发布内容</p>'}`;
     else if(t==='stories') body=`<div class="ig-story-viewer"><div class="story-progress"><span></span><span></span></div><div class="story-viewer-head"><span class="story-avatar filled">✦</span><b>故事线索 <small>虚构故事</small></b><button onclick="setSocialTab('instagram','feed')" aria-label="关闭快拍">×</button></div><div class="story-scene"><span>✦</span><p>今晚的游戏之夜<br>你会参加吗？</p></div><div class="story-viewer-foot"><button onclick="openPost('instagram','ig-game')">查看关联动态 ›</button></div></div>`;
     else if(t==='search') body=`<div class="search-box"><input id="socialSearch" class="field" placeholder="搜索虚构帖子" oninput="searchPosts()"></div><div id="searchResults">${postList(app).map(p=>postCard(app,p)).join('')}</div>`;
     else if(t==='messages') body=`<div class="listrow" onclick="openApp('kakao')"><span class="avatar">✉</span><div><b>故事私信</b><small>私密剧情请在 KakaoTalk 继续</small></div></div>`;
@@ -116,11 +117,15 @@
     if(page==='chat') {
       $('#screen .header .back').setAttribute('onclick',"openApp('kakao')");
       const pending=state.story.pending;
-      if(chatName==='jk' && pending) {
+      if(chatName===(pending?.channel||'jk') && pending) {
         const target=$('#screen .composer');
         target.insertAdjacentHTML('beforebegin',`<div class="event-choices">${pending.options.map((o,i)=>btn(o.label,`resolveEvent(${i})`,'outline choice')).join('')}</div>`);
       }
-      const log=$('#screen .chat');if(log) log.scrollTop=log.scrollHeight;
+      const composer=$('#screen .composer');
+      composer.insertAdjacentHTML('afterbegin',`<button class="chat-attach" onclick="document.getElementById('chatPhotoInput').click()" aria-label="发送照片">+</button><input id="chatPhotoInput" class="chat-attachment-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="sendChatPhoto(event)">`);
+      const log=$('#screen .chat');
+      (chatName==='group'?state.group:state.messages).forEach((message,i)=>{if(message.image){const bubble=log.querySelectorAll('.bubble')[i];const img=document.createElement('img');img.src=message.image;img.alt='聊天照片';img.className='chat-photo';bubble?.append(img)}});
+      if(log)log.scrollTop=log.scrollHeight;
     }
     if(page==='settings') $('#screen').insertAdjacentHTML('beforeend',card(`<h3>导入存档</h3><p class="mini">支持当前版本及 V0.4 JSON。导入会替换当前本机进度，请先导出备份。</p><input type="file" accept="application/json,.json" onchange="importSave(event)">`));
   };
@@ -134,27 +139,41 @@
   window.searchPosts=()=>{const q=$('#socialSearch').value.trim().toLowerCase();$('#searchResults').innerHTML=postList(page).filter(p=>(p.text+' '+p.author).toLowerCase().includes(q)).map(p=>postCard(page,p)).join('')||'<p class="empty">没有匹配的虚构帖子</p>'};
   window.sharePost=async(app,id)=>{const post=postList(app).find(p=>p.id===id);if(!post)return;const text=`Another Day · 虚构故事\n${post.text}`;try{if(navigator.share)await navigator.share({title:'Another Day',text,url:location.href});else{await navigator.clipboard.writeText(text);alert('已复制虚构动态文字')}}catch{}};
   window.showMedia=(app,id)=>{const p=postList(app).find(x=>x.id===id);if(!p)return;const overlay=document.createElement('div');overlay.className='media-overlay';overlay.innerHTML=`<button onclick="this.parentNode.remove()" aria-label="关闭图片">×</button><div class="media-art">${esc(p.media)}</div><p>${esc(p.text)}</p>`;document.querySelector('.phone').append(overlay)};
+  window.sendChatPhoto=event=>{const file=event.target.files?.[0];if(!file)return;if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>750_000){alert('请选择小于 750KB 的 PNG、JPEG、WebP 或 GIF 图片');return}const reader=new FileReader();reader.onload=()=>{const list=chatName==='group'?state.group:state.messages;list.push({from:'me',text:'[照片]',image:String(reader.result),day:state.day});try{save();render()}catch{list.pop();alert('本机存储空间不足，请导出存档后再试')}};reader.readAsDataURL(file)};
 
   const events=[
     {id:'day2-game',day:2,when:s=>s.choices.includes('first'),text:'JK：昨天那局配合得不错。下次还想一起玩吗？',options:[{label:'当然，一起练习',reply:'好啊，我们慢慢练习。',delta:2,flag:'practice'},{label:'偶尔玩就好',reply:'没问题，有空再玩ㅋㅋ',delta:0,flag:'casual'}]},
     {id:'day3-music',day:3,when:()=>true,text:'JK：今天发现一首适合散步的歌。你平时听什么？',options:[{label:'分享我最近喜欢的歌',reply:'我会去听听。谢谢推荐！',delta:1,flag:'music'},{label:'先聊聊游戏',reply:'ㅋㅋ 好，那先说游戏。',delta:0,flag:'game'}]},
-    {id:'day5-group',day:5,when:()=>true,text:'JK：周末游戏小分队要组队。你想加入吗？',options:[{label:'加入小分队',reply:'太好了，我把时间发到群里。',delta:2,flag:'join-group'},{label:'这次先旁观',reply:'当然，随时欢迎你。',delta:0,flag:'watch'}]}
+    {id:'day4-group',day:4,channel:'group',from:'Jimin',when:()=>true,text:'Jimin：周末想组个合作局，你们谁有空？',options:[{label:'我可以加入',reply:'太好啦，我晚点把时间发群里！',delta:1,flag:'join-group'},{label:'我先看看时间',reply:'没问题，确定了再说ㅋㅋ',delta:0,flag:'maybe-group'}]},
+    {id:'day5-followup',day:5,when:()=>true,text:s=>s.story.flags['join-group']?'JK：看到你在群里说要来。上次你说的配合方式，我记住了。':'JK：群里在商量周末的游戏。你要是有空，也可以随时来。',options:[{label:'周末见，期待这局',reply:'嗯，周末见ㅋㅋ',delta:2,flag:'weekend-plan'},{label:'到时再决定',reply:'好，你不用有压力。',delta:0,flag:'weekend-open'}]},
+    {id:'day6-prep',day:6,when:()=>true,text:s=>s.story.flags.practice?'JK：我照你说的又练了一会儿。今天终于过了那一关。':'JK：我重新看了昨天的关卡，终于找到一个简单的办法。',options:[{label:'太好了，讲给我听',reply:'ㅋㅋ 等你上线，我带你走一遍。',delta:1,flag:'strategy'},{label:'留到下次一起试',reply:'好啊，保留一点惊喜。',delta:1,flag:'surprise'}]},
+    {id:'day7-reflection',day:7,when:()=>true,text:'JK：这一周聊了好多。你最喜欢哪一刻？',options:[{label:'第一次一起玩游戏',reply:'我也是。那天真的很有趣。',delta:2,flag:'memory-game'},{label:'听你分享音乐的时候',reply:'原来你记得那首歌。下次再分享给你。',delta:2,flag:'memory-music'}]},
+    {id:'day8-challenge',day:8,channel:'group',from:'Jimin',when:()=>true,text:'Jimin：游戏里出了限时合作任务！今晚试一试吗？',options:[{label:'我来整理任务路线',reply:'太靠谱了！我负责提醒大家时间。',delta:1,flag:'route-lead'},{label:'我负责补位支援',reply:'好，那我们就不用担心最后一关了。',delta:1,flag:'team-support'}]},
+    {id:'day9-plan',day:9,when:()=>true,text:s=>s.story.flags['route-lead']?'JK：你整理的路线我看了，最后一段我来配合你。':'JK：昨天你说要补位，我记住了。关键时刻交给我们两个。',options:[{label:'我们按计划慢慢来',reply:'好，不赶时间。一起完成就好。',delta:2,flag:'steady-plan'},{label:'试试更快的打法',reply:'ㅋㅋ 有挑战性，我跟上。',delta:1,flag:'fast-plan'}]},
+    {id:'day10-finale',day:10,when:()=>true,text:'JK：最后一关就在眼前了。现在只剩一个决定：要稳稳通关，还是赌一次捷径？',options:[{label:'稳稳通关，照顾整个队伍',reply:'我们做到了。大家都在，才是最好的结局。',delta:2,flag:'team-finale'},{label:'冒险走捷径',reply:'差点失败ㅋㅋ 但你反应真的很快。',delta:1,flag:'bold-finale'}]}
   ];
   function enqueueDue() {
     if(state.story.pending)return;
     const event=events.find(e=>e.day===state.day&&!state.story.seen.includes(e.id)&&e.when(state));
     if(!event)return;
-    state.story.pending={id:event.id,options:event.options};
-    state.messages.push({from:'jk',text:event.text,day:state.day});
-    state.story.notifications.unshift({day:state.day,text:event.text,app:'kakao'});
-    state.history.push(`第${state.day}天：${event.text}`);
+    const channel=event.channel||'jk',speaker=event.from||'jk',text=typeof event.text==='function'?event.text(state):event.text;
+    state.story.pending={id:event.id,options:event.options,channel,from:speaker};
+    (channel==='group'?state.group:state.messages).push({from:speaker,text,day:state.day});
+    state.story.notifications.unshift({day:state.day,text,app:'kakao',channel});
+    state.history.push(`第${state.day}天：${text}`);
   }
-  window.resolveEvent=i=>{const p=state.story.pending,o=p?.options[i];if(!o)return;state.messages.push({from:'me',text:o.label,day:state.day},{from:'jk',text:o.reply,day:state.day});state.story.flags[o.flag]=true;state.story.relations.jk+=o.delta;state.affinity=state.story.relations.jk;state.story.seen.push(p.id);state.story.pending=null;state.history.push(`第${state.day}天：${o.label}`);enqueueDue();save();render()};
+  window.resolveEvent=i=>{const p=state.story.pending,o=p?.options[i];if(!o)return;const list=p.channel==='group'?state.group:state.messages;list.push({from:'me',text:o.label,day:state.day},{from:p.from||'jk',text:o.reply,day:state.day});state.story.flags[o.flag]=true;state.story.relations.jk+=o.delta;state.affinity=state.story.relations.jk;state.story.seen.push(p.id);state.story.pending=null;state.history.push(`第${state.day}天：${o.label}`);const linked={
+    'day3-music':{app:'instagram',author:'故事日记 · 虚构',text:o.flag==='music'?'今天交换了一首适合散步的歌。':'一首歌勾起了游戏之夜的记忆。',media:'♫'},
+    'day4-group':{app:'threads',author:'游戏小分队 · 虚构',text:o.flag==='join-group'?'周末合作局，队友都到齐了。':'周末合作局还在等最后一位队友。'},
+    'day6-prep':{app:'x',author:'虚构游戏话题',text:'#GameNight 终于找到通关那一关的新方法。'},
+    'day8-challenge':{app:'threads',author:'游戏小分队 · 虚构',text:'限时合作任务开始。每个人都找到了自己的位置。'},
+    'day10-finale':{app:'instagram',author:'故事日记 · 虚构',text:o.flag==='team-finale'?'那一关终于通了。最开心的是大家都在。':'捷径差点让我们失败，但最后还是笑着过关了。',media:'✦'}
+  }[p.id];if(linked&&!state.social.posts.some(post=>post.id===`story-${p.id}`))state.social.posts.unshift({id:`story-${p.id}`,source:'story',day:state.day,...linked});enqueueDue();save();render()};
   const legacyChoose=choose;
   choose=function(type){legacyChoose(type);state.story.seen.push('day1-first');state.story.relations.jk=state.affinity;enqueueDue();save();render()};
-  advanceDay=function(){if(state.story.pending){openChat('jk');return}state.day++;state.history.push(`第${state.day}天：新的一天`);enqueueDue();save();render()};
+  advanceDay=function(){if(state.story.pending){openChat(state.story.pending.channel||'jk');return}state.day++;state.history.push(`第${state.day}天：新的一天`);enqueueDue();save();render()};
   const legacyNotifications=showNotifications;
-  showNotifications=function(){legacyNotifications();const box=$('#screen .lock');if(box){const items=state.story.notifications.slice(0,5);box.insertAdjacentHTML('beforeend',items.map(n=>`<div class="notice" onclick="openChat('jk')"><b>KakaoTalk · 虚构剧情</b><p>${esc(n.text)}</p></div>`).join(''))}};
+  showNotifications=function(){legacyNotifications();const box=$('#screen .lock');if(box){const items=state.story.notifications.slice(0,5);box.insertAdjacentHTML('beforeend',items.map(n=>`<div class="notice" onclick="openChat('${n.channel==='group'?'group':'jk'}')"><b>KakaoTalk · 虚构剧情</b><p>${esc(n.text)}</p></div>`).join(''))}};
   const legacyHome=goHome;
   goHome=function(){detail=null;legacyHome()};
   const legacyOpen= openApp;
