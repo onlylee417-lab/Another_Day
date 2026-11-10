@@ -33,12 +33,12 @@
   const sourceCards=app=>`<section class="public-sources ${app}-sources"><div class="public-sources-head"><b>${app==='weverse'?'BTS · Weverse':app==='instagram'?'BTS · Instagram':'BTS · X'}</b><small>账号入口</small></div><div class="public-sources-list">${(publicSources[app]||[]).map((s,i)=>{const inner=`<span class="source-avatar">${esc(s.label[0])}</span><span><b>${esc(s.label)}</b><small>${esc(s.detail)}</small></span><span class="source-arrow">↗</span>`;return app==='weverse'&&s.label==='Jung Kook'?`<button onclick="openWeverseArtist()" aria-label="查看 Jung Kook 艺人主页">${inner}</button>`:app==='instagram'?`<button onclick="openInstagramArtist(${i})" aria-label="查看 ${esc(s.label)} 资料页">${inner}</button>`:`<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="在原平台查看 ${esc(s.label)}">${inner}</a>`}).join('')}</div></section>`;
   const publicExcerpts={
     instagram:[
-      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.03.24',summary:'一组热身时的日常画面。',url:'https://www.instagram.com/p/DWS7me_mCzX/'},
-      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.20',summary:'分享了一组自己拍下的街头照片。',url:'https://www.instagram.com/p/Devd9WylZJO/'},
-      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.10.21',summary:'官方账号记录了世界巡演圣地亚哥站。',url:'https://www.instagram.com/p/DewCUU_GAiQ/'},
-      {author:'V',handle:'@thv',date:'2026.10.20',summary:'分享了照片与一段随手写下的话。',url:'https://www.instagram.com/p/Det7oS5lTlB/'},
-      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.14',summary:'发了一条写着「LOVE BALTIMORE」的动态。',url:'https://www.instagram.com/p/DeeBDzLFY26/'},
-      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.11.04',summary:'留下一枚笑脸，和新拍下的画面。',url:'https://www.instagram.com/p/DfUY2FnFGEc/'}
+      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.03.24',original:'warming-up💪',translation:'热身中💪',url:'https://www.instagram.com/p/DWS7me_mCzX/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.20',original:'（原帖未附文字）',translation:'以照片记录街头瞬间。',url:'https://www.instagram.com/p/Devd9WylZJO/'},
+      {author:'BTS',handle:'@bts.bighitofficial',date:'2026.10.21',original:'BTS WORLD TOUR ’ARIRANG‘ IN SANTIAGO\n#방탄소년단 #BTS #BTS_WORLDTOUR_ARIRANG\n#BTS_WORLDTOUR_ARIRANG_LATAM\n#BTS_WORLDTOUR_ARIRANG_SANTIAGO',translation:'BTS《ARIRANG》世界巡演 · 圣地亚哥站',url:'https://www.instagram.com/p/DewCUU_GAiQ/'},
+      {author:'V',handle:'@thv',date:'2026.10.20',original:'흙이 묻은 건 아니야\n충분히 오해할 만해.\n원래 이렇다\n아니라니깐..',translation:'不是沾了土。会误会也正常，它本来就是这样……都说不是了。',url:'https://www.instagram.com/p/Det7oS5lTlB/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.10.14',original:'L O V E B A L T I M O R E 🍽️🍌🍯',translation:'爱巴尔的摩 🍽️🍌🍯',url:'https://www.instagram.com/p/DeeBDzLFY26/'},
+      {author:'Jung Kook',handle:'@mnijungkook',date:'2026.11.04',original:'😁',translation:'笑脸。',url:'https://www.instagram.com/p/DfUY2FnFGEc/'}
     ],
     weverse:[
       {author:'Jung Kook',handle:'BTS · Artist',date:'2026.03.21',summary:'谈到即将到来的舞台，感谢前来见面的 ARMY，也提醒大家平安地享受演出。',url:'https://weverse.io/bts/artist/4-224099089'},
@@ -49,7 +49,7 @@
     ]
   };
   function drawExcerpts(app){const pool=[...(publicExcerpts[app]||[])],count=app==='weverse'?3:2,old=excerptSelection[app]||[];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}let next=pool.slice(0,count);if(old.length&&next.map(x=>x.url).sort().join('|')===old.map(x=>x.url).sort().join('|')){const other=pool.filter(x=>!old.some(y=>y.url===x.url));if(other.length)next[count-1]=other[Math.floor(Math.random()*other.length)]}excerptSelection[app]=next}
-  const excerptCards=(app,items=excerptSelection[app]||publicExcerpts[app]||[])=>`<section class="public-excerpts"><div class="public-excerpts-title"><b>${app==='weverse'?'Artist Feed':'公开动态'}</b><small>公开帖子摘要 · ${app==='weverse'?'Weverse':'Instagram'}</small></div>${items.map(p=>`<article class="public-excerpt"><div class="public-excerpt-head"><span class="source-avatar">${esc(p.author[0])}</span><span><b>${esc(p.author)}</b><small>${esc(p.handle)} · ${esc(p.date)}</small></span></div><p>${esc(p.summary)}</p><a href="${p.url}" target="_blank" rel="noopener noreferrer">查看来源 ↗</a></article>`).join('')}</section>`;
+  const excerptCards=(app,items=excerptSelection[app]||publicExcerpts[app]||[])=>`<section class="public-excerpts"><div class="public-excerpts-title"><b>${app==='weverse'?'Artist Feed':'公开动态'}</b><small>${app==='weverse'?'公开帖子摘要 · Weverse':'原帖嵌入 · Instagram'}</small></div>${items.map(p=>`<article class="public-excerpt"><div class="public-excerpt-head"><span class="source-avatar">${esc(p.author[0])}</span><span><b>${esc(p.author)}</b><small>${esc(p.handle)} · ${esc(p.date)}</small></span></div>${app==='instagram'?`<div class="instagram-embed"><div class="embed-loading">正在加载原帖图片…</div><iframe onload="this.previousElementSibling.remove()" src="${p.url}embed/" title="${esc(p.author)} 的 Instagram 原帖" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div class="excerpt-copy"><small>原文</small><p>${esc(p.original)}</p><small>中文翻译${p.original.startsWith('（')?'／说明':''}</small><p>${esc(p.translation)}</p></div>`:`<p>${esc(p.summary)}</p>`}<a href="${p.url}" target="_blank" rel="noopener noreferrer">查看来源 ↗</a></article>`).join('')}</section>`;
   const initialStory = () => ({seen:[],pending:null,flags:{},relations:{jk:0},notifications:[]});
   function hydrate(raw) {
     const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
